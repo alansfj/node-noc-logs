@@ -61,38 +61,35 @@ export class FileSystemDatasource implements LogDatasourse {
   }
 
   async getLogs(severityLevel: LogSeverityLevel): Promise<LogEntity[]> {
-    let fileContent = "";
+    try {
+      let fileContent = "";
 
-    if (severityLevel === LogSeverityLevel.low) {
-      fileContent = fs.readFileSync(this.lowLogsFilePath, {
-        encoding: "utf-8",
-      });
+      if (severityLevel === LogSeverityLevel.low) {
+        fileContent = fs.readFileSync(this.lowLogsFilePath, {
+          encoding: "utf-8",
+        });
+      }
+
+      if (severityLevel === LogSeverityLevel.medium) {
+        fileContent = fs.readFileSync(this.mediumLogsFilePath, {
+          encoding: "utf-8",
+        });
+      }
+
+      if (severityLevel === LogSeverityLevel.high) {
+        fileContent = fs.readFileSync(this.highLogsFilePath, {
+          encoding: "utf-8",
+        });
+      }
+
+      const logsArray = fileContent.split("\n");
+
+      const logs = logsArray.map(LogEntity.stringToEntity);
+
+      return logs;
+    } catch (error) {
+      console.log(error);
+      return [];
     }
-
-    if (severityLevel === LogSeverityLevel.medium) {
-      fileContent = fs.readFileSync(this.mediumLogsFilePath, {
-        encoding: "utf-8",
-      });
-    }
-
-    if (severityLevel === LogSeverityLevel.high) {
-      fileContent = fs.readFileSync(this.highLogsFilePath, {
-        encoding: "utf-8",
-      });
-    }
-
-    const logsArray = fileContent.split("\n");
-
-    const logs = logsArray.map((log) => {
-      const logJson = JSON.parse(log);
-
-      const logEntity = new LogEntity(logJson.message, logJson.severity);
-
-      logEntity.createdAt = new Date(logJson.createdAt);
-
-      return logEntity;
-    });
-
-    return logs;
   }
 }
